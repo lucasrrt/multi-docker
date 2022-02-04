@@ -1,5 +1,5 @@
 {
-  "dependencies" : {
+  "dependencies": {
     "express": "4.16.3",
     "pg": "8.0.3",
     "redis": "2.8.0",
