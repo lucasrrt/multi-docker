@@ -1,4 +1,5 @@
 sudo: required
+language: generic
 services:
   - docker
 
@@ -6,17 +7,29 @@ before_install:
   - docker build -t lucasrrt/react-test -f ./client/Dockerfile.dev ./client
 
 script:
-  - docker run -e CI=true lucasrrt/react-test npm test -- --coverage
+  - docker run -e CI=true lucasrrt/react-test npm test
 
 after_success:
-  - docker build -t lucasrrt/multi-client ./client
-  - docker build -t lucasrrt/multi-nginx ./nginx
-  - docker build -t lucasrrt/multi-server ./server
-  - docker build -t lucasrrt/multi-worker ./worker
+  - docker build -t lucasrrt/multi-client-10-14 ./client
+  - docker build -t lucasrrt/multi-nginx-10-14 ./nginx
+  - docker build -t lucasrrt/multi-server-10-14 ./server
+  - docker build -t lucasrrt/multi-worker-10-14 ./worker
   # Log in to the docker CLI
   - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
-  # Take these builds and push to docker hub
-  - docker push lucasrrt/multi-client
-  - docker push lucasrrt/multi-nginx
-  - docker push lucasrrt/multi-server
-  - docker push lucasrrt/multi-worker
+  # Take those images and push them to docker hub
+  - docker push lucasrrt/multi-client-10-14
+  - docker push lucasrrt/multi-nginx-10-14
+  - docker push lucasrrt/multi-server-10-14
+  - docker push lucasrrt/multi-worker-10-14
+
+deploy:
+  provider: elasticbeanstalk
+  region: 'us-east-1'
+  app: 'multi-docker'
+  env: 'MultiDocker-env'
+  bucket_name: 'elasticbeanstalk-us-east-1-923445559289'
+  bucket_path: 'docker-multi'
+  on:
+    branch: master
+  access_key_id: $AWS_ACCESS_KEY
+  secret_access_key: $AWS_SECRET_KEY
